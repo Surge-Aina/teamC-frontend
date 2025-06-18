@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "./Navbar";
 import API_BASE_URL from "../api";
+import WorkerDashboard from "./WorkerDashboard";
 
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
@@ -25,10 +26,10 @@ const Login = () => {
       if (isSignup) {
         endpoint = `${API_BASE_URL}/auth/signup`;
         payload = { ...form }; // includes role
-        } else {
+      } else {
         endpoint = `${API_BASE_URL}/auth/login`;
         payload = { email: form.email, password: form.password }; // do NOT send role
-        }
+      }
 
       const res = await fetch(endpoint, {
         method: "POST",
@@ -48,6 +49,10 @@ const Login = () => {
       // redirect based on role
       if (data.user.role === "admin") {
         navigate("/admin");
+      } else if (data.user.role === "worker") {
+        navigate("/worker");
+      } else if (data.user.role === "manager") {
+        navigate("/manager");
       } else {
         navigate("/dashboard");
       }
@@ -72,7 +77,9 @@ const Login = () => {
           >
             <option value="">Select Role</option>
             <option value="admin">Admin</option>
-            <option value="user">User</option>
+            <option value="user">Customer</option>
+            <option value="worker">Worker</option>
+            <option value="manager">Manager</option>
           </select>
           {isSignup && (
             <input

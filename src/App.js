@@ -6,6 +6,9 @@ import Dashboard from "./components/CustomerDashboard.js";
 import Navbar from "./components/Navbar.js";
 import { useAuth } from "./context/AuthContext.js";
 import AdminDashboard from "./components/AdminDashboard.js"; 
+import WorkerDashboard from "./components/WorkerDashboard.js"; 
+import ManagerDashboard from "./components/ManagerDashboard.js";
+
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
   return user ? children : <Navigate to="/" />;
@@ -32,6 +35,22 @@ function AppLayout() {
     element={
       <ProtectedRoute>
         <AdminDashboard />
+      </ProtectedRoute>
+    }
+  />
+  <Route
+    path="/worker"
+    element={
+      <ProtectedRoute>
+        <WorkerDashboard />
+      </ProtectedRoute>
+    }
+  />
+  <Route
+    path="/manager"
+    element={
+      <ProtectedRoute>
+        <ManagerDashboard />
       </ProtectedRoute>
     }
   />

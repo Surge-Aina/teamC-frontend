@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import API_BASE_URL, { deleteUser } from "../api";
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
@@ -10,46 +11,96 @@ const Dashboard = () => {
 
   // user: save description
   const handleDescriptionSave = async () => {
-    setDescCreated(true);
-    setEditingDesc(false);
+    try {
+      const res = await fetch(`${API_BASE_URL}/users/${user._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({ description }),
+      });
+      if (!res.ok) throw new Error("Failed to save description");
+      setDescCreated(true);
+      setEditingDesc(false);
+    } catch (err) {
+      const text = await err?.response?.text?.();
+      alert("Error saving description: " + (err.message || text));
+    }
+  };
+
+  // user: save name
+  const handleNameSave = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/users/${user._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({ name }),
+      });
+      if (!res.ok) throw new Error("Failed to save name");
+      alert("Name updated!");
+    } catch (err) {
+      alert("Error saving name: " + err.message);
+    }
   };
 
   // user: delete profile
   const handleDeleteProfile = async () => {
-    logout();
+    try {
+      await deleteUser(user._id, user.token);
+      logout();
+    } catch (err) {
+      alert("Error deleting profile: " + err.message);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100 flex flex-col">
       <main className="flex-1 flex flex-col md:flex-row gap-8 px-4 md:px-16 py-8">
         {/* left panel */}
-        <section className="flex-1 bg-white/80 rounded-2xl shadow-lg p-8 mb-8 md:mb-0">
-          <div className="mb-6">
+        <section className="flex-1 bg-white/80 rounded-2xl shadow-lg p-8 mb-8 md:mb-0 flex flex-col justify-between">
+          <div>
             <h2 className="text-xl font-bold mb-2">
-              Welcome, <span className="text-indigo-700">{name}</span>!
+              Welcome,{" "}
+              <span className="text-indigo-700">{name}</span>!
             </h2>
             <p className="text-gray-600">
-              Role: <span className="font-semibold capitalize">{user?.role}</span>
+              Role:{" "}
+              <span className="font-semibold capitalize">{user?.role}</span>
             </p>
           </div>
           {/* USER VIEW */}
           {user?.role === "user" && (
             <>
               <div className="mb-6">
-                <label className="block font-medium mb-2">Change your name:</label>
+                <label className="block font-medium mb-2">
+                  Change your name:
+                </label>
                 <input
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-2"
                   value={name}
-                  onChange={e => setName(e.target.value)}
+                  onChange={(e) => setName(e.target.value)}
                 />
+                <button
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg ml-2"
+                  onClick={handleNameSave}
+                  disabled={!name.trim()}
+                >
+                  Save Name
+                </button>
               </div>
               {!descCreated ? (
                 <div className="mb-6">
-                  <label className="block font-medium mb-2">Create your description:</label>
+                  <label className="block font-medium mb-2">
+                    Create your description:
+                  </label>
                   <textarea
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-2"
                     value={description}
-                    onChange={e => setDescription(e.target.value)}
+                    onChange={(e) => setDescription(e.target.value)}
                   />
                   <button
                     className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg"
@@ -61,7 +112,9 @@ const Dashboard = () => {
                 </div>
               ) : (
                 <div className="mb-6">
-                  <label className="block font-medium mb-2">Your description:</label>
+                  <label className="block font-medium mb-2">
+                    Your description:
+                  </label>
                   {!editingDesc ? (
                     <div>
                       <p className="mb-2">{description}</p>
@@ -86,7 +139,7 @@ const Dashboard = () => {
                       <textarea
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg mb-2"
                         value={description}
-                        onChange={e => setDescription(e.target.value)}
+                        onChange={(e) => setDescription(e.target.value)}
                       />
                       <button
                         className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg mr-2"
@@ -105,20 +158,22 @@ const Dashboard = () => {
                   )}
                 </div>
               )}
-              <button
-                onClick={handleDeleteProfile}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg shadow-lg transition duration-200 mb-4"
-              >
-                Delete Profile
-              </button>
             </>
           )}
+          <button
+            onClick={handleDeleteProfile}
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg shadow-lg transition duration-200 mt-6"
+          >
+            Delete Profile
+          </button>
         </section>
         {/* right panel */}
         <section className="flex-1 bg-white/80 rounded-2xl shadow-lg p-8 flex items-center justify-center">
           <div className="text-gray-500 text-center">
             <p className="mb-2">Keep your profile up to date!</p>
-            <p className="text-xs">You can edit your name and description at any time.</p>
+            <p className="text-xs">
+              You can edit your name and description at any time.
+            </p>
           </div>
         </section>
       </main>

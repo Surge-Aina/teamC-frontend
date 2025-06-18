@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext.js";
 import Login from "./components/Login.js";
-import Dashboard from "./components/UserDashboard.js";
+import Dashboard from "./components/CustomerDashboard.js";
 import Navbar from "./components/Navbar.js";
 import { useAuth } from "./context/AuthContext.js";
 import AdminDashboard from "./components/AdminDashboard.js"; 

@@ -1,3 +1,5 @@
+/* imports tailwind base, component, and utility styles for the app */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -2,6 +2,11 @@ import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import API_BASE_URL, { deleteUser } from "../api";
 
+// function: workerDashboard
+// parameters: none
+// returns: jsx.element
+// description:
+// main worker dashboard component, displays worker profile, allows editing name/description, and deleting profile
 const WorkerDashboard = () => {
   const { user, logout, login } = useAuth();
   const [name, setName] = useState(user?.name || "");
@@ -11,7 +16,11 @@ const WorkerDashboard = () => {
   const [editingName, setEditingName] = useState(false);
   const [showDescInput, setShowDescInput] = useState(false);
 
-  // save description to backend
+  // function: handleDescriptionSave
+  // parameters: none
+  // returns: promise<void>
+  // description:
+  // saves the worker's description to the backend and updates state
   const handleDescriptionSave = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/users/${user._id}`, {
@@ -32,7 +41,11 @@ const WorkerDashboard = () => {
     }
   };
 
-  // save name to backend
+  // function: handleNameSave
+  // parameters: none
+  // returns: promise<void>
+  // description:
+  // saves the worker's name to the backend and updates state
   const handleNameSave = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/users/${user._id}`, {
@@ -52,7 +65,11 @@ const WorkerDashboard = () => {
     }
   };
 
-  // delete profile
+  // function: handleDeleteProfile
+  // parameters: none
+  // returns: promise<void>
+  // description:
+  // deletes the worker's profile and logs out
   const handleDeleteProfile = async () => {
     try {
       await deleteUser(user._id, user.token);

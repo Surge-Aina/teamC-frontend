@@ -2,6 +2,12 @@ import React from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+// function: navbar
+// parameters:
+//   onLogout (function): callback to handle logout
+// returns: jsx.element
+// description:
+// navbar component, displays app title and logout button if user is logged in and not on login page
 const Navbar = ({ onLogout }) => {
   const location = useLocation();
   const { user } = useAuth();

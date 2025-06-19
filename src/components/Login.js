@@ -5,6 +5,11 @@ import Navbar from "./Navbar";
 import API_BASE_URL from "../api";
 import WorkerDashboard from "./WorkerDashboard";
 
+// function: login
+// parameters: none
+// returns: jsx.element
+// description:
+// login/signup component. handles authentication form, role selection, and redirects user based on role
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", password: "", role: "" });
@@ -12,11 +17,23 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  // function: handleChange
+  // parameters:
+  //   e (object): event object from input/select
+  // returns: void
+  // description:
+  // updates form state when input fields change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
+  // function: handleSubmit
+  // parameters:
+  //   e (object): form submit event
+  // returns: promise<void>
+  // description:
+  // handles login or signup form submission, authenticates user, and redirects based on role
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");

@@ -2,6 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import API_BASE_URL, { deleteUser } from "../api";
 
+// function: isUserActive
+// parameters:
+//   user (object)
+// returns:
+//   boolean
+// description:
+// checks if a user is currently active based on lastActive timestamp and isActive flag
 const isUserActive = (user) => {
   if (!user.lastActive) return false;
   const lastActive = new Date(user.lastActive);
@@ -10,6 +17,12 @@ const isUserActive = (user) => {
   return user.isActive && (now - lastActive < 600000);
 };
 
+// function: adminDashboard
+// parameters: none
+// returns:
+//   jsx.element
+// description:
+// main admin dashboard component. displays admin profile and user management panel
 const AdminDashboard = () => {
   const { user, logout } = useAuth(); 
   const [users, setUsers] = useState([]);
@@ -18,7 +31,11 @@ const AdminDashboard = () => {
   const [editedName, setEditedName] = useState("");
   const [view, setView] = useState("all"); 
 
-  // fetch users 
+  // function: fetchUsers
+  // parameters: none
+  // returns: void (async)
+  // description:
+  // fetches all users from the backend and updates state
   const fetchUsers = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/users`, {
@@ -33,17 +50,29 @@ const AdminDashboard = () => {
     }
   };
 
+  // effect: fetch users on mount or when user changes
   useEffect(() => {
     if (user?.token) fetchUsers();
-   
   }, [user]);
 
+  // function: handleEdit
+  // parameters:
+  //   id (string)
+  //   name (string)
+  // returns: void
+  // description:
+  // sets the editing state for a user to allow name editing
   const handleEdit = (id, name) => {
     setEditingId(id);
     setEditedName(name);
   };
 
-  // update handleSave to refetch users after saving
+  // function: handleSave
+  // parameters:
+  //   id (string)
+  // returns: void (async)
+  // description:
+  // saves the edited user name and refreshes the user list
   const handleSave = async (id) => {
     try {
       const res = await fetch(`${API_BASE_URL}/users/${id}`, {
@@ -55,7 +84,7 @@ const AdminDashboard = () => {
         body: JSON.stringify({ name: editedName }),
       });
       if (!res.ok) throw new Error("Failed to save name");
-      await fetchUsers(); // refetch users to get updated activity and name
+      await fetchUsers();
       setEditingId(null);
       setEditedName("");
     } catch (err) {
@@ -63,11 +92,22 @@ const AdminDashboard = () => {
     }
   };
 
+  // function: handleCancel
+  // parameters: none
+  // returns: void
+  // description:
+  // cancels editing state for user name
   const handleCancel = () => {
     setEditingId(null);
     setEditedName("");
   };
 
+  // function: handleDelete
+  // parameters:
+  //   id (string)
+  // returns: void (async)
+  // description:
+  // deletes a user by id and updates the user list
   const handleDelete = async (id) => {
     try {
       await deleteUser(id, user.token);
@@ -77,7 +117,11 @@ const AdminDashboard = () => {
     }
   };
 
-  // admin profile deletion
+  // function: handleDeleteProfile
+  // parameters: none
+  // returns: void (async)
+  // description:
+  // deletes the admin's own profile and logs out
   const handleDeleteProfile = async () => {
     try {
       await deleteUser(user._id, user.token);
@@ -87,7 +131,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // filter users based on selected view
+  // filteredUsers: array of users filtered by selected view
   const filteredUsers =
     view === "all"
       ? users

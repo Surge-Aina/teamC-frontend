@@ -2,6 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import API_BASE_URL, { deleteUser } from "../api";
 
+// function: managerDashboard
+// parameters: none
+// returns: jsx.element
+// description:
+// main manager dashboard component. displays manager profile, allows adding/deleting workers, and viewing workers/managers
 const ManagerDashboard = () => {
   const { user, logout } = useAuth();
   const [workers, setWorkers] = useState([]);
@@ -11,8 +16,12 @@ const ManagerDashboard = () => {
   const [view, setView] = useState("all");
   const [showAddWorker, setShowAddWorker] = useState(false); 
 
-  // fetch active workers and managers
   useEffect(() => {
+    // function: fetchUsers
+    // parameters: none
+    // returns: promise<void>
+    // description:
+    // fetches workers and managers from backend and updates state
     const fetchUsers = async () => {
       setLoading(true);
       try {
@@ -32,7 +41,12 @@ const ManagerDashboard = () => {
     if (user?.token) fetchUsers();
   }, [user]);
 
-  // add new worker
+  // function: handleAddWorker
+  // parameters:
+  //   e (object): form submit event
+  // returns: promise<void>
+  // description:
+  // adds a new worker via backend and refreshes the list
   const handleAddWorker = async (e) => {
     e.preventDefault();
     try {
@@ -59,7 +73,12 @@ const ManagerDashboard = () => {
     }
   };
 
-  // delete a worker under this manager
+  // function: handleDeleteWorker
+  // parameters:
+  //   id (string)
+  // returns: promise<void>
+  // description:
+  // deletes a worker by id and updates the workers list
   const handleDeleteWorker = async (id) => {
     try {
       await deleteUser(id, user.token); 
@@ -69,7 +88,11 @@ const ManagerDashboard = () => {
     }
   };
 
-  // delete own profile
+  // function: handleDeleteProfile
+  // parameters: none
+  // returns: promise<void>
+  // description:
+  // deletes the manager's own profile and logs out
   const handleDeleteProfile = async () => {
     try {
       await deleteUser(user._id, user.token);
@@ -79,7 +102,7 @@ const ManagerDashboard = () => {
     }
   };
 
-  // combine workers and managers for "all" view
+  // allUsers: array of all workers and managers for "all" view
   const allUsers = [...workers, ...managers];
 
   return (

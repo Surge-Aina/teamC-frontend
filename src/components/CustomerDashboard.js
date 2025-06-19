@@ -2,6 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import API_BASE_URL, { deleteUser } from "../api";
 
+// function: dashboard
+// parameters: none
+// returns: jsx.element
+// description: 
+// main customer dashboard component. displays profile info and allows editing name/description and deleting profile
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const [name, setName] = useState(user?.name || "");
@@ -11,7 +16,7 @@ const Dashboard = () => {
   const [editingName, setEditingName] = useState(false);
   const [showDescInput, setShowDescInput] = useState(false);
 
-  // ping backend to update activity
+  // effect: ping backend to update activity on mount or when user changes
   useEffect(() => {
     const ping = async () => {
       if (user?.token) {
@@ -23,7 +28,11 @@ const Dashboard = () => {
     ping();
   }, [user]);
 
-  // user: save description
+  // function: handleDescriptionSave
+  // parameters: none
+  // returns: promise<void>
+  // description:
+  // saves the user's description to the backend and updates state
   const handleDescriptionSave = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/users/${user._id}`, {
@@ -44,7 +53,11 @@ const Dashboard = () => {
     }
   };
 
-  // user: save name
+  // function: handleNameSave
+  // parameters: none
+  // returns: promise<void>
+  // description:
+  // saves the user's name to the backend and updates state
   const handleNameSave = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/users/${user._id}`, {
@@ -62,7 +75,11 @@ const Dashboard = () => {
     }
   };
 
-  // user: delete profile
+  // function: handleDeleteProfile
+  // parameters: none
+  // returns: promise<void>
+  // description:
+  // deletes the user's profile and logs out
   const handleDeleteProfile = async () => {
     try {
       await deleteUser(user._id, user.token);

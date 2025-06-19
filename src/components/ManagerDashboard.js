@@ -8,8 +8,8 @@ const ManagerDashboard = () => {
   const [managers, setManagers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newWorker, setNewWorker] = useState({ name: "", email: "", password: "" });
-  const [view, setView] = useState("all"); // "all", "workers", "managers"
-  const [showAddWorker, setShowAddWorker] = useState(false); // <-- NEW
+  const [view, setView] = useState("all");
+  const [showAddWorker, setShowAddWorker] = useState(false); 
 
   // fetch active workers and managers
   useEffect(() => {
@@ -46,7 +46,7 @@ const ManagerDashboard = () => {
       });
       if (!res.ok) throw new Error("Failed to add worker");
       setNewWorker({ name: "", email: "", password: "" });
-      setShowAddWorker(false); // Hide form after adding
+      setShowAddWorker(false); // hide form after adding
       // refresh list
       const updated = await fetch(`${API_BASE_URL}/users/workers-managers`, {
         headers: { Authorization: `Bearer ${user.token}` },
@@ -86,7 +86,7 @@ const ManagerDashboard = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100 flex flex-col">
       <main className="flex-1 flex flex-col md:flex-row gap-8 px-4 md:px-16 py-8">
         {/* left panel: manager info and delete profile */}
-        <section className="flex-1 bg-white/80 rounded-2xl shadow-lg p-8 mb-8 md:mb-0 flex flex-col justify-between">
+        <section className="flex-[1] bg-white border border-gray-200 rounded-xl shadow-md p-6 mb-8 md:mb-0 flex flex-col justify-between">
           <div>
             <h2 className="text-xl font-bold mb-4 text-left">Manager Profile</h2>
             <div className="space-y-4">
@@ -112,7 +112,7 @@ const ManagerDashboard = () => {
           </button>
         </section>
         {/* right panel: dropdown for workers/managers/all and add worker */}
-        <section className="flex-1 bg-white/80 rounded-2xl shadow-lg p-8 flex flex-col">
+        <section className="flex-[1.5] bg-white border border-gray-200 rounded-xl shadow-md p-6 flex flex-col">
           <div className="mb-6 flex items-center">
             <label className="font-semibold mr-2" htmlFor="view-select">
               Show:
@@ -128,7 +128,7 @@ const ManagerDashboard = () => {
               <option value="managers">Managers</option>
             </select>
             <button
-              className="ml-auto bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 rounded-lg shadow-lg transition duration-200"
+              className="ml-auto bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-3 py-1.5 md:px-4 md:py-2 text-sm md:text-base rounded-lg shadow-lg transition duration-200"
               onClick={() => setShowAddWorker((v) => !v)}
             >
               {showAddWorker ? "Cancel" : "Add Worker"}
@@ -176,7 +176,7 @@ const ManagerDashboard = () => {
               ) : allUsers.length === 0 ? (
                 <div className="text-gray-500 text-center">No users found.</div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-4 max-h-[28rem] overflow-y-auto pr-2">
                   {allUsers.map(u => (
                     <div
                       key={u._id}
@@ -213,7 +213,7 @@ const ManagerDashboard = () => {
               ) : workers.length === 0 ? (
                 <div className="text-gray-500 text-center">No workers found.</div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
                   {workers.map(w => (
                     <div
                       key={w._id}
@@ -248,7 +248,7 @@ const ManagerDashboard = () => {
               ) : managers.length === 0 ? (
                 <div className="text-gray-500 text-center">No managers found.</div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
                   {managers.map(m => (
                     <div
                       key={m._id}

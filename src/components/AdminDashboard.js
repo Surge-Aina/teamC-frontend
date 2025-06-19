@@ -2,28 +2,40 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import API_BASE_URL, { deleteUser } from "../api";
 
+const isUserActive = (user) => {
+  if (!user.lastActive) return false;
+  const lastActive = new Date(user.lastActive);
+  const now = new Date();
+  // 10 mins
+  return user.isActive && (now - lastActive < 600000);
+};
+
 const AdminDashboard = () => {
   const { user, logout } = useAuth(); 
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [editedName, setEditedName] = useState("");
+  const [view, setView] = useState("all"); 
+
+  // fetch users 
+  const fetchUsers = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/users`, {
+        headers: { Authorization: `Bearer ${user.token}` },
+      });
+      const data = await res.json();
+      setUsers(data);
+    } catch (err) {
+      setUsers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/users`, {
-          headers: { Authorization: `Bearer ${user.token}` },
-        });
-        const data = await res.json();
-        setUsers(data);
-      } catch (err) {
-        setUsers([]);
-      } finally {
-        setLoading(false);
-      }
-    };
     if (user?.token) fetchUsers();
+   
   }, [user]);
 
   const handleEdit = (id, name) => {
@@ -31,11 +43,24 @@ const AdminDashboard = () => {
     setEditedName(name);
   };
 
+  // update handleSave to refetch users after saving
   const handleSave = async (id) => {
-    // send update to backend
-    setUsers(users.map(u => u._id === id ? { ...u, name: editedName } : u));
-    setEditingId(null);
-    setEditedName("");
+    try {
+      const res = await fetch(`${API_BASE_URL}/users/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({ name: editedName }),
+      });
+      if (!res.ok) throw new Error("Failed to save name");
+      await fetchUsers(); // refetch users to get updated activity and name
+      setEditingId(null);
+      setEditedName("");
+    } catch (err) {
+      alert("Error saving name: " + err.message);
+    }
   };
 
   const handleCancel = () => {
@@ -62,11 +87,17 @@ const AdminDashboard = () => {
     }
   };
 
+  // filter users based on selected view
+  const filteredUsers =
+    view === "all"
+      ? users
+      : users.filter(u => u.role === view);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100 flex flex-col">
       <main className="flex-1 flex flex-col md:flex-row gap-8 px-4 md:px-16 py-8">
-        {/* left panel: admin info */}
-        <section className="flex-1 bg-white/80 rounded-2xl shadow-lg p-8 mb-8 md:mb-0 flex flex-col justify-between">
+        {/* left panel */}
+        <section className="flex-[1] bg-white border border-gray-200 rounded-xl shadow-md p-6 mb-8 md:mb-0 flex flex-col justify-between">
           <div>
             <h2 className="text-xl font-bold mb-4 text-left">Admin Profile</h2>
             <div className="space-y-4">
@@ -91,49 +122,70 @@ const AdminDashboard = () => {
             Delete Profile
           </button>
         </section>
-        {/* right panel: user list */}
-        <section className="flex-1 bg-white/80 rounded-2xl shadow-lg p-8 flex flex-col">
-          <h2 className="text-xl font-bold mb-4 text-left">User List</h2>
+        {/* right panel */}
+        <section className="flex-[1.5] bg-white border border-gray-200 rounded-xl shadow-md p-6 flex flex-col">
+          <div className="mb-4 flex items-center gap-x-2">
+            <label className="font-semibold mr-2" htmlFor="admin-view-select">
+              Show:
+            </label>
+            <select
+              id="admin-view-select"
+              value={view}
+              onChange={e => setView(e.target.value)}
+              className="px-4 py-2 rounded-lg border border-gray-300"
+            >
+              <option value="all">All</option>
+              <option value="worker">Workers</option>
+              <option value="manager">Managers</option>
+              <option value="customer">Customers</option>
+              <option value="admin">Admins</option>
+            </select>
+          </div>
+          <h2 className="text-xl font-bold tracking-tight mb-2 text-left">User List</h2>
           {loading ? (
             <div className="text-gray-500 text-center">Loading users...</div>
-          ) : users.length === 0 ? (
+          ) : filteredUsers.length === 0 ? (
             <div className="text-gray-500 text-center">No users found.</div>
           ) : (
-            <div className="space-y-4">
-              {users.map(u => (
+            <div className="divide-y divide-gray-100 max-h-96 overflow-y-auto pr-2 bg-white rounded-lg">
+              {filteredUsers.map(u => (
                 <div
                   key={u._id}
-                  className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3 shadow-sm"
+                  className="flex items-center justify-between px-2 py-3 hover:bg-gray-100 transition"
                 >
-                  <div>
+                  <div className="flex items-center">
+                    <span
+                      title={isUserActive(u) ? "Recently active" : "Away"}
+                      className={`inline-block w-3 h-3 rounded-full mr-2 ${
+                        isUserActive(u) ? "bg-green-500" : "bg-gray-400"
+                      }`}
+                    />
                     {editingId === u._id ? (
                       <>
                         <input
-                          className="border-b border-gray-300 bg-transparent px-1 text-lg font-semibold mr-2"
+                          className="border-b border-gray-300 bg-transparent px-1 text-base font-semibold mr-2"
                           value={editedName}
                           onChange={e => setEditedName(e.target.value)}
                           autoFocus
                         />
                         <button
-                          className="text-green-600 hover:underline mr-2"
+                          className="text-green-600 hover:underline mr-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
                           onClick={() => handleSave(u._id)}
                           disabled={!editedName.trim()}
                         >
                           Save
                         </button>
                         <button
-                          className="text-gray-600 hover:underline"
+                          className="text-gray-600 hover:underline rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
                           onClick={handleCancel}
                         >
                           Cancel
                         </button>
                       </>
                     ) : (
-                      <>
-                        <span className="font-semibold text-lg mr-2">{u.name}</span>
-                      </>
+                      <span className="font-semibold text-base mr-2">{u.name}</span>
                     )}
-                    <span className="ml-2 px-2 py-1 rounded text-xs font-semibold bg-gray-200 text-gray-800">
+                    <span className="ml-2 px-2 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-800">
                       {u.role}
                     </span>
                   </div>
@@ -141,14 +193,14 @@ const AdminDashboard = () => {
                     <span className="text-gray-500 text-sm">{u.email}</span>
                     {editingId !== u._id && (
                       <button
-                        className="text-indigo-600 hover:underline ml-4"
+                        className="text-indigo-600 hover:underline ml-4 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
                         onClick={() => handleEdit(u._id, u.name)}
                       >
                         Edit
                       </button>
                     )}
                     <button
-                      className="text-red-600 hover:underline ml-2"
+                      className="text-red-600 hover:underline ml-2 rounded-md focus:outline-none focus:ring-2 focus:ring-red-400"
                       onClick={() => handleDelete(u._id)}
                     >
                       Delete
